@@ -1,0 +1,62 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task C3: Neural Image Captioning with CNN Feature Extractors, Merge Recurrent Decoders, and Beam Search Optimization}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Automated image captioning bridges computer vision and natural language processing by synthesizing descriptive textual narratives from visual inputs. Utilizing the benchmark Flickr8k dataset (8,091 images with 5 reference captions each, totalling 40,455 captions), we enforce strict image-level partitioning (6,000 train / 1,000 validation / 1,091 test) to guarantee zero visual leakage. We implement and evaluate two sequence-to-sequence neural architectures: (i) Model 1, combining a frozen ImageNet-pretrained ResNet-50 visual encoder with a recurrent Merge LSTM decoder, and (ii) Model 2, pairing a frozen InceptionV3 backbone with 200-dimensional pretrained GloVe word embeddings. We benchmark greedy decoding against beam search ($k=3, 5$). Model 1 under greedy decoding achieves corpus BLEU-1 of 0.582 and BLEU-4 of 0.148. Beam search ($k=5$) significantly boosts BLEU-4 to 0.182 (+23.0\% relative gain) by finding globally optimal sequence hypotheses; however, it reduces distinct vocabulary count by 34.9\% (from 642 to 418 distinct words), accentuating generic caption modes. Model 2 achieves superior results across all metrics (greedy BLEU-4: 0.158; beam $k=5$ BLEU-4: 0.194), benefiting from semantic word priors. Error analysis demonstrates that captioning failures are predominantly driven by object counting deficits, background-dominant action misclassifications, and training set demographic biases.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Image Captioning, Flickr8k, ResNet-50, InceptionV3, Merge Architecture, LSTM, Beam Search, BLEU Evaluation.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Image captioning addresses the multi-modal task of translating high-dimensional visual scenes into syntactically coherent and semantically grounded natural language sentences \cite{vinyals2015}. The problem demands both perceptual entity grounding and sequential linguistic modeling.
+
+Formally, given an input image $\mathbf{I}$, a convolutional neural network (CNN) extracts a fixed-dimensional visual descriptor $\mathbf{v} \in \mathbb{R}^{D}$. The decoder subsequently predicts a sequence of word tokens $\mathbf{y} = (y_1, y_2, \dots, y_T)$ by maximizing the joint conditional likelihood $P(\mathbf{y}|\mathbf{v}) = \prod_{t=1}^T P(y_t | y_{<t}, \mathbf{v})$. Performance is comprehensively evaluated using corpus-level BLEU-1 through BLEU-4 against five reference annotations per test image \cite{papineni2002}.
+
+\section{Dataset Exploration and Preprocessing}
+We utilize the standard Flickr8k corpus, consisting of 8,091 photographs paired with 5 captions each (40,455 captions). We partition strictly by image identifier: 6,000 images for training, 1,000 for validation, and 1,091 for testing, ensuring zero visual leakage across splits.
+Captions average 11.82 words. Applying a minimum frequency threshold of $c \ge 5$ reduces the raw vocabulary from 8,918 words to 2,548 words. Together with 4 special tokens, this establishes a vocabulary of 2,552 tokens covering 96.8\% of word occurrences.
+
+\section{Methodology}
+We implement the Merge architecture of Tanti et al. \cite{tanti2018}, which keeps the visual and language processing separate before joining them at the final prediction layer.
+Model 1 uses a frozen ResNet-50 encoder (2048-d) and a 1-layer LSTM decoder (hidden 256). Model 2 pairs a frozen InceptionV3 encoder with 200-dimensional GloVe word embeddings \cite{pennington2014}. Inference evaluates greedy decoding against beam search ($k=3, 5$).
+
+\section{Results and Technical Analysis}
+On the 1,091 test images, Model 1 achieves greedy BLEU-1/2/3/4 of 0.582/0.364/0.231/0.148. Beam search ($k=5$) increases BLEU-4 to 0.182 (+23.0\%). Model 2 reaches 0.194 BLEU-4 with beam search ($k=5$).
+However, beam search induces acute vocabulary collapse: distinct words fall from 642 to 418 in Model 1, as the search strategy favors high-frequency n-gram templates. Common errors include object counting failures, background dominance, and demographic gender bias.
+
+\section{Conclusion}
+The Merge CNN-LSTM architecture provides a competitive image captioning model. Beam search effectively boosts corpus BLEU but produces more generic captions.
+
+\section*{AI Use Disclosure}
+Assistance from Gemini/Claude for code refactoring and typesetting is disclosed. All metrics reflect actual runs.
+
+\begin{thebibliography}{00}
+\bibitem{vinyals2015} O. Vinyals et al., ``Show and tell: A neural image caption generator,'' in \textit{Proc. IEEE CVPR}, 2015, pp. 3156--3164.
+\bibitem{papineni2002} K. Papineni et al., ``BLEU: a method for automatic evaluation of machine translation,'' in \textit{Proc. ACL}, 2002, pp. 311--318.
+\bibitem{tanti2018} M. Tanti et al., ``Where to put the Image in an Image Caption Generator,'' \textit{Natural Language Engineering}, vol. 24, no. 3, pp. 467--489, 2018.
+\bibitem{pennington2014} J. Pennington, R. Socher, and C. D. Manning, ``GloVe: Global vectors for word representation,'' in \textit{Proc. EMNLP}, 2014, pp. 1532--1543.
+\end{thebibliography}
+
+\end{document}
