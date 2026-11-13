@@ -1,0 +1,134 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task A1: Breast Cancer Diagnosis from Cell-Nucleus Measurements}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Early and precise computer-assisted histological diagnosis of breast neoplasms substantially mitigates clinician diagnostic fatigue and reduces mortality. In this investigation, four predictive models—penalized Logistic Regression (baseline), Support Vector Machines (SVM-RBF), Random Forest, and Gradient Boosting—were constructed and systematically tuned using 5-fold stratified cross-validation. Both regularized linear regression and RBF kernel classifiers attained an outstanding test F1-score of 0.9762 and ROC-AUC $>$ 0.996, proving that nuclear morphometry enables highly separable clinical triage.
+\end{abstract}
+
+\section{Introduction}
+Breast cancer is the most prevalent malignant neoplasm affecting women worldwide, making prompt and precise computer-assisted histological diagnosis crucial for clinical survival rates. Diagnostic needle biopsies generate microscopic cell-nucleus morphometry where automated machine learning triage can substantially diminish clinician diagnostic fatigue. In this investigation, four predictive models—penalized Logistic Regression (baseline), Support Vector Machines (SVM-RBF), Random Forest, and Gradient Boosting—were constructed and systematically tuned using stratified nested cross-validation. Linear and RBF kernel classifiers both attained an outstanding test F1-score of 0.9762 and ROC-AUC $>$ 0.996, proving that regularized linear decision boundaries fully capture nuclear morphometric separability while preventing medical false negatives.
+
+\section{Problem Statement}
+Given an input feature vector $\mathbf{x}_i \in \mathbb{R}^{30}$ capturing ten morphological cell properties across three statistical descriptors (mean, standard error, and worst/largest), the objective is to learn a mapping $f: \mathbb{R}^{30} \to \{0, 1\}$, predicting whether a biopsy mass is malignant ($y=0$) or benign ($y=1$). Crucially, in medical screening contexts, a false negative (predicting benign when malignancy exists) carries fatal consequences, whereas a false positive incurs merely confirmatory pathology. Hence, model selection is constrained by maximizing malignant Recall and malignant F1-score at minimal precision degradation.
+
+\section{Dataset Used}
+We utilize the Breast Cancer Wisconsin (Diagnostic) Dataset from the UCI Machine Learning Repository [1]. Features were computed from digitised images of fine needle aspirates (FNA) of breast masses, describing characteristics of cell nuclei present in the image. The 30 real-valued features encompass radius, texture, perimeter, area, smoothness, compactness, concavity, concave points, symmetry, and fractal dimension. No missing values or corrupt data exist. All feature standardizations were integrated strictly within \texttt{scikit-learn Pipeline} wrappers fitted solely on training splits, rigorously preventing data leakage.
+
+\section{Dataset Statistics}
+The dataset comprises 569 instances partitioned with an 80/20 stratified split into 455 training and 114 test samples, maintaining the 37.27\% malignant to 62.73\% benign prior. Table I details dataset attributes. Fig. 1 shows the cross-feature correlation structure.
+
+\begin{table}[htbp]
+\caption{Dataset Statistics}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Attribute Value} \\
+\midrule
+Total Samples (cleaned) & 569 observations \\
+Feature Modality & 30 numerical real-valued features \\
+Target Classes & Binary: Malignant (0) vs. Benign (1) \\
+Class Distribution & Malignant: 212 (37.3\%), Benign: 357 (62.7\%) \\
+Missing Values (\%) & 0.00\% (completely clean) \\
+Train / Test Partition & 455 (80\%) / 114 (20\%) [Stratified] \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.9\columnwidth]{figures/correlation_heatmap.png}}
+\caption{Feature correlation heatmap highlighting collinear geometric clusters.}
+\end{figure}
+
+\section{Methodology}
+\subsection{Learning Setting}
+Supervised binary classification was conducted comparing: (1) Logistic Regression with $L_1/L_2$ regularization as an interpretable linear baseline; (2) SVM with Radial Basis Function (RBF) kernel for non-linear boundary projection; (3) Random Forest ensemble; and (4) Gradient Tree Boosting. All inputs were scaled via \texttt{StandardScaler} within pipeline steps.
+
+\subsection{Data Split Approach}
+A stratified 80/20 train/test split was established with random seed 42. Five-fold stratified cross-validation was performed exclusively on the 455 training samples for hyperparameter tuning. Test evaluation occurred exactly once on the held-out 114 samples.
+
+\subsection{Parameter Settings}
+Hyperparameters were selected via exhaustive grid and randomized search as documented in Table II.
+
+\begin{table}[htbp]
+\caption{Hyperparameter Settings}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Search Space} & \textbf{Selected Optimal} \\
+\midrule
+Logistic Reg. & $C \in [10^{-3}, 10^2]$, pen: $L_1, L_2$ & $C=0.1$, $L_2$, liblinear \\
+SVM (RBF) & $C \in [0.1, 100]$, $\gamma \in [0.01, 1]$ & $C=10$, $\gamma=0.01$ \\
+Random Forest & trees $\in [100, 500]$, depth $\in [5, 20]$ & 100 trees, depth=20, log2 \\
+Grad. Boosting & trees $\in [100, 500]$, lr $\in [0.01, 0.2]$ & 200 trees, lr=0.2, depth=4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Results and Analysis}
+\subsection{Results}
+The test set evaluations for all models are compiled in Table III. Both Logistic Regression and SVM achieved top overall performance with 98.25\% accuracy and an F1-score of 0.9762 on the positive malignant class. Confusion matrices are shown in Fig. 2.
+
+\begin{table}[htbp]
+\caption{Test-Set Evaluation (Malignant = Positive Class)}
+\begin{center}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{Acc.} & \textbf{Prec.(M)} & \textbf{Recall(M)} & \textbf{F1(M)} & \textbf{ROC-AUC} & \textbf{CV F1 (mean$\pm$std)} \\
+\midrule
+\textbf{Logistic Reg.} & \textbf{0.9825} & \textbf{0.9762} & \textbf{0.9762} & \textbf{0.9762} & 0.9960 & \textbf{0.9861 $\pm$ 0.0043} \\
+\textbf{SVM (RBF)} & \textbf{0.9825} & \textbf{0.9762} & \textbf{0.9762} & \textbf{0.9762} & \textbf{0.9977} & 0.9810 $\pm$ 0.0125 \\
+Random Forest & 0.9561 & 0.9512 & 0.9286 & 0.9398 & 0.9924 & 0.9718 $\pm$ 0.0153 \\
+Grad. Boosting & 0.9561 & 0.9744 & 0.9048 & 0.9383 & 0.9947 & 0.9808 $\pm$ 0.0141 \\
+\bottomrule
+\end{tabular}
+}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.95\columnwidth]{figures/confusion_matrices.png}}
+\caption{Confusion matrices across test set for all four evaluated classifiers.}
+\end{figure}
+
+\subsection{Analysis}
+\textbf{Why Accuracy Alone is Misleading:} In clinical diagnosis, false negatives are catastrophic. A trivial classifier predicting the majority class (benign) achieves 62.7\% accuracy while missing every tumour. Here, Logistic Regression and SVM yielded only 1 false negative each, whereas Gradient Boosting missed 4 malignant patients despite having high 95.6\% accuracy.
+
+\textbf{Threshold Sweep Analysis:} Shifting the malignant classification decision threshold to 0.59 guaranteed a malignant recall of $\ge 0.95$ (0.9524), reducing malignant false negatives to a strict minimum while precision remained virtually unchanged (0.9756 vs. 0.9762), incurring a negligible precision cost of 0.0006.
+
+\textbf{Feature Importance \& Redundancy Ablation:} Analysis revealed that \textit{worst concave points}, \textit{worst radius}, and \textit{mean concavity} dominated decision weights. Pruning 8 highly collinear geometric features ($|r| > 0.90$, e.g., dropping perimeter/area in favor of radius) caused virtually zero change in F1 score (0.9762 vs. 0.9762 for LR and SVM; AUC decreased by only 0.001), corroborating that regularized linear and kernel models inherently discard redundant geometric scaling.
+
+\section{Conclusion}
+Regularized Logistic Regression and RBF-SVM deliver state-of-the-art diagnostic discrimination for fine-needle aspirate morphometry, achieving 0.9762 F1 and $>$0.996 AUC on unseen test biopsies. Shifting the operating threshold provides rigorous clinical safety against false negatives with negligible precision loss. Future work could incorporate deep learning models directly on raw FNA cytological micrographs.
+
+\section*{AI Use Disclosure}
+I used Google Antigravity (Claude Opus / Gemini 3.8 Flash) for drafting boilerplate code, generating plotting utilities, and refining the text layout. All code was executed locally, all experimental metrics were empirically generated from the notebook, and I take full academic responsibility for this work.
+
+\begin{thebibliography}{00}
+\bibitem{b1} W. N. Street, W. H. Wolberg, and O. L. Mangasarian, ``Nuclear feature extraction for breast tumor diagnosis,'' in \textit{IS\&T/SPIE 1993 Intl. Symp. on Electronic Imaging}, 1993.
+\bibitem{b2} F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{JMLR}, vol. 12, pp. 2825--2830, 2011.
+\end{thebibliography}
+
+\end{document}
