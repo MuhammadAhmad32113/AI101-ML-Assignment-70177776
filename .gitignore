@@ -1,6 +1,8 @@
 # Large data files and weights (>50 MB rule)
 *.csv
 *.tsv
+*.xlsx
+*.xls
 *.zip
 *.tar.gz
 *.pt
@@ -16,6 +18,9 @@
 !**/data/
 !**/data/README.md
 !data/README.md
+
+# Specific datasets
+A3_Dry_Bean/data/DryBeanDataset/
 
 # Python & Environment artifacts
 venv/
