@@ -1,0 +1,26 @@
+# Large data files and weights (>50 MB rule)
+*.csv
+*.tsv
+*.zip
+*.tar.gz
+*.pt
+*.pth
+*.h5
+*.pkl
+*.joblib
+*.bin
+*.model
+*.parquet
+
+# Keep data documentation
+!**/data/
+!**/data/README.md
+!data/README.md
+
+# Python & Environment artifacts
+venv/
+env/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store

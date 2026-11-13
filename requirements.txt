@@ -1,0 +1,38 @@
+# Core ML
+scikit-learn>=1.5
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.9
+seaborn>=0.13
+
+# Data loading
+ucimlrepo>=0.0.7
+kaggle>=1.6
+PyPDF2>=3.0
+
+# Pool B - Text features
+scipy>=1.13
+
+# Pool C - Deep Learning
+torch>=2.3
+torchvision>=0.18
+
+# Pool C - Hugging Face
+transformers>=4.40
+datasets>=2.19
+tokenizers>=0.19
+sentencepiece>=0.2
+
+# Pool C - Evaluation
+sacrebleu>=2.4
+rouge-score>=0.1.2
+nltk>=3.9
+
+# Gradient Boosting
+xgboost>=2.0
+lightgbm>=4.3
+
+# Jupyter
+jupyter>=1.0
+ipykernel>=6.29
+nbformat>=5.10
