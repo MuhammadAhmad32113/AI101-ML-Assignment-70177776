@@ -1,0 +1,132 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task A3: Dry Bean Variety Recognition from Shape Features}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Automated computer-vision seed sorting is vital for agricultural yield optimization and certified genetic purity verification. In this investigation, four models—Multinomial Logistic Regression, RBF-SVM, Random Forest, and a Multi-Layer Perceptron (MLP)—were trained and tuned. Tuned RBF-SVM and deep MLP both attained top test macro-F1 of 0.9366 and 0.9338 with 92.65\% accuracy. Furthermore, PCA dimensionality reduction showed that just 8 components retain 99.93\% variance and match full-dimensional macro-F1.
+\end{abstract}
+
+\section{Introduction}
+Automated computer-vision seed sorting is vital for agricultural yield optimization and certified genetic purity verification. Discriminating visually similar dry bean varieties from hand-crafted morphological and geometric dimensions poses a challenging multi-class classification problem due to non-linear shape overlaps and class imbalance. In this study, four models—Multinomial Logistic Regression, RBF-SVM, Random Forest, and a Multi-Layer Perceptron (MLP)—were trained and tuned. Tuned RBF-SVM and deep MLP both attained a top test macro-F1 of 0.9366 and 0.9338 with 92.65\% accuracy; furthermore, PCA dimensionality reduction showed that just 8 components retain 99.93\% variance and match full-dimensional macro-F1.
+
+\section{Problem Statement}
+Given an input vector $\mathbf{x} \in \mathbb{R}^{16}$ describing 12 morphological dimensions (area, perimeter, axes, convex area, etc.) and 4 shape factors, learn a mapping $f: \mathbb{R}^{16} \to \{1, \dots, 7\}$ assigning each grain to one of seven commercial varieties: Barbunya, Bombay, Cali, Dermason, Horoz, Seker, and Sira. Due to natural biological size disparities (Dermason has 3,546 instances whereas Bombay has 522), unweighted accuracy favors majority varieties; hence, the primary success metric is macro-averaged F1-score across all 7 varieties.
+
+\section{Dataset Used}
+We utilize the Dry Bean Dataset from the UCI Machine Learning Repository (id=602) curated by Koklu and Ozkan [1]. The dataset comprises 13,611 high-resolution grain images segmented into 16 geometric features. No missing values exist. The data was split into training (70\%), validation (15\%), and test (15\%) subsets using stratified sampling. Feature standardization (\texttt{StandardScaler}) was fitted strictly on the training partition to prevent information leakage.
+
+\section{Dataset Statistics}
+The dataset contains 13,611 grains distributed across 7 registered cultivars: Dermason (3,546), Sira (2,636), Seker (2,027), Horoz (1,928), Cali (1,630), Barbunya (1,322), and Bombay (522). Table I details partition counts. Fig. 1 shows the 2D PCA projection.
+
+\begin{table}[htbp]
+\caption{Dataset Statistics}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Attribute Value} \\
+\midrule
+Total Samples & 13,611 grain instances \\
+Input Features & 16 numeric morphological/shape descriptors \\
+Target Classes & 7 bean varieties (multi-class) \\
+Class Distribution & Dermason (26.1\%) down to Bombay (3.8\%) \\
+Missing Values (\%) & 0.00\% (clean records) \\
+Train / Val / Test & 9,527 (70\%) / 2,042 (15\%) / 2,042 (15\%) \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.9\columnwidth]{figures/pca_2d_scatter.png}}
+\caption{2-D PCA projection coloured by bean variety showing distinct Bombay cluster and overlapping Dermason/Sira.}
+\end{figure}
+
+\section{Methodology}
+\subsection{Learning Setting}
+Supervised multi-class classification was evaluated across: (1) Multinomial Logistic Regression ($L_2$ regularized); (2) Support Vector Classifier with RBF kernel; (3) Random Forest ensemble; and (4) a Multi-Layer Perceptron (MLP) with ReLU activations. All inputs were standardized via \texttt{StandardScaler} fitted on the training split.
+
+\subsection{Data Split Approach}
+A stratified 70/15/15 train/validation/test split was established with random seed 42. Hyperparameter sweeps were tuned against the validation partition. Final performance was measured once on the untouched test partition.
+
+\subsection{Parameter Settings}
+Optimal hyperparameters identified via validation macro-F1 search appear in Table II.
+
+\begin{table}[htbp]
+\caption{Hyperparameter Settings}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Search Space} & \textbf{Selected Optimal} \\
+\midrule
+Logistic Reg. & $C \in \{0.01, 0.1, 1.0, 10.0\}$ & $C=10.0$, lbfgs \\
+SVM (RBF) & $C \in \{1, 10, 50\}$, $\gamma \in \{\text{scale}, \text{auto}\}$ & $C=50.0$, $\gamma=\text{scale}$ \\
+Random Forest & trees $\in \{100,200,300\}$, depth $\in \{20,30,\text{None}\}$ & 100 trees, depth=None \\
+MLP Classifier & archs: (128,64), (256,128), (256,128,64) & (256,128,64), $\alpha=10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Results and Analysis}
+\subsection{Results}
+Model performance on the 2,042 held-out test grains is presented in Table III. RBF-SVM achieved top macro-F1 of 0.9366 (92.65\% accuracy), closely followed by MLP at 0.9338 (92.31\% accuracy). Fig. 2 shows the $7\times 7$ confusion matrix.
+
+\begin{table}[htbp]
+\caption{Test-Set Evaluation Results (7 Classes)}
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{Accuracy} & \textbf{Macro-F1} & \textbf{Weighted-F1} \\
+\midrule
+\textbf{SVM (RBF)} & \textbf{0.9265} & \textbf{0.9366} & \textbf{0.9265} \\
+MLP (Deep) & 0.9231 & 0.9338 & 0.9232 \\
+Random Forest & 0.9202 & 0.9314 & 0.9201 \\
+Logistic Regression & 0.9182 & 0.9304 & 0.9184 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.85\columnwidth]{figures/confusion_matrix.png}}
+\caption{$7\times 7$ normalized confusion matrix on test partition for best neural model.}
+\end{figure}
+
+\subsection{Analysis}
+\textbf{Confused Varieties:} The confusion matrix revealed that Dermason and Sira are most frequently confused (47 Dermason misclassified as Sira, 25 Sira as Dermason). Similarly, Barbunya and Cali exhibited mutual confusion (15 Barbunya as Cali, 9 Cali as Barbunya). Feature distribution boxplots showed that Dermason and Sira have nearly identical compactness and roundness profiles, differing only slightly in aspect ratio.
+
+\textbf{Class Weighting Impact:} Comparing \texttt{class\_weight=None} against \texttt{class\_weight='balanced'} showed that unweighted models slightly outperformed balanced models in macro-F1 (0.9425 vs. 0.9389 for SVM; 0.9384 vs. 0.9349 for LR). Because the smallest class (Bombay, 522 samples) has distinct large dimensions that all models classify with 100\% precision/recall, reweighting artificially degraded accuracy on Dermason and Sira without assisting minority classes.
+
+\textbf{PCA Dimensionality Study:} Training models across $k=2, 4, 8, 16$ principal components yielded test macro-F1 scores of 0.8721, 0.9008, 0.9371, and 0.9345 respectively. Remarkable: $k=8$ components retained 99.93\% variance and reached 0.9371 macro-F1, exceeding 98\% (in fact 100.3\%) of full 16-feature performance while cutting input dimensional complexity in half.
+
+\section{Conclusion}
+Non-linear classifiers (RBF-SVM and MLP) deliver over 93.6\% macro-F1 and 92.6\% accuracy on automated dry bean seed sorting. Bombay grains are 100\% separable, while Dermason and Sira represent the primary morphological bottleneck. Principal component analysis demonstrates that 8 components fully capture grain shape geometry. Future work could incorporate hyperspectral imaging and texture features.
+
+\section*{AI Use Disclosure}
+I used Google Antigravity (Claude Opus / Gemini 3.8 Flash) for drafting boilerplate code, generating plotting utilities, and refining the text layout. All code was executed locally, all experimental metrics were empirically generated from the notebook, and I take full academic responsibility for this work.
+
+\begin{thebibliography}{00}
+\bibitem{b1} M. Koklu and I. A. Ozkan, ``Multiclass classification of dry beans using computer vision and machine learning techniques,'' \textit{Computers and Electronics in Agriculture}, vol. 174, p. 105507, 2020.
+\bibitem{b2} F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{JMLR}, vol. 12, pp. 2825--2830, 2011.
+\end{thebibliography}
+
+\end{document}
