@@ -1,0 +1,57 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task B2: Predicting Wine Critic Scores from Tasting Notes and Metadata via Multimodal Regression}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Sommelier ratings and wine critic scores heavily dictate pricing and auction valuations. In this work, we predict wine scores (80--100 points) from natural language sensory descriptions and metadata. After rigorous de-duplication removing 9,983 duplicate reviews, Ridge regression on combined multimodal features achieves the lowest prediction error of MAE = 1.1875 ($R^2 = 0.7580$), reducing metadata-only error by 37.5\% and demonstrating that sommelier tasting notes contain significant predictive signal beyond price and origin.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Multimodal Regression, NLP, Wine Ratings, Ridge Regression, De-duplication.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Wine critic points dictate market demand. We utilize the 130k Wine Reviews dataset to model ratings via combined metadata and free-text representations.
+
+\section{Problem Statement}
+Given $\mathbf{x} = (\mathbf{x}_{\text{meta}}, \mathbf{x}_{\text{text}})$, we learn $f(\mathbf{x}) \to y \in [80, 100]$. Evaluation metrics are MAE, RMSE, and $R^2$.
+
+\section{Dataset and De-duplication}
+The Wine Reviews corpus contains 129,971 raw reviews. Exact de-duplication removed 9,983 duplicates (7.7\%), preventing 12.1\% test-set leakage. The clean dataset contains 119,988 records partitioned 80/10/10.
+
+\section{Methodology and Results}
+TF-IDF (10,000 features) was combined with log-price and categorical origin features. Models evaluated: Dummy Baseline, Ridge ($\alpha=1.0$), LinearSVR, and LightGBM.
+
+Ridge (Combined) achieved the best test MAE of 1.1875 and $R^2$ of 0.7580. An error band analysis revealed regression to the mean at extreme rating bands (80--84 MAE = 2.2370; 95--100 MAE = 2.8113).
+
+\section{Conclusion}
+Sensory descriptions provide crucial predictive information, significantly enhancing price and origin metadata alone.
+
+\section*{AI Use Disclosure}
+Assistance from Gemini/Claude AI assistants for typesetting and formatting is disclosed under university guidelines. All results are empirically verified.
+
+\begin{thebibliography}{00}
+\bibitem{thoutt2017} Z. Thoutt, ``Wine Reviews Dataset,'' Kaggle, 2017.
+\bibitem{pedregosa2011} F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{JMLR}, vol. 12, pp. 2825--2830, 2011.
+\end{thebibliography}
+
+\end{document}
