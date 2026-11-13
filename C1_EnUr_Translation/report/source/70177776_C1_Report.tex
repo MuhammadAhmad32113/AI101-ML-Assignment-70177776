@@ -1,0 +1,55 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task C1: English-to-Urdu Neural Machine Translation with Attention and Pretrained Transformer}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+English-to-Urdu neural translation poses acute challenges due to Subject-Verb-Object (SVO) to Subject-Object-Verb (SOV) syntactic divergence and rich morphology. Using the OPUS-100 dataset, we implement a BiGRU encoder-decoder with Luong attention trained on a cleaned 75,000-pair subset. On a held-out 2,000-pair test set, beam search ($k=4$) elevates sacreBLEU from 18.42 to 20.85 (chrF 41.20). Pretrained MarianMT reaches 29.74 BLEU (chrF 52.18).
+\end{abstract}
+
+\begin{IEEEkeywords}
+Neural Machine Translation, Attention Mechanism, Seq2Seq, Urdu NLP, SentencePiece.
+\end{IEEEkeywords}
+
+\section{Introduction}
+English-Urdu translation requires substantial structural reordering. We evaluate a trained BiGRU with attention against MarianMT on OPUS-100.
+
+\section{Problem Statement}
+Given English tokens $\mathbf{x}$, generate Urdu tokens $\mathbf{y}$ maximizing $P(\mathbf{y}|\mathbf{x})$. Primary metrics are sacreBLEU and chrF.
+
+\section{Dataset and Cleaning}
+OPUS-100 contains 749,287 raw pairs. Four filters (deduplication, length ratio $\le 3$, length $\le 30$, and Urdu Unicode validation) retained 421,830 clean pairs. We train on 75,000 pairs and evaluate on 2,000 test pairs.
+
+\section{Methodology and Results}
+SentencePiece (8k merges) was trained for each language. Model 1 (2-layer BiGRU, 512 hidden) achieved 20.85 sacreBLEU with beam search ($k=4$). MarianMT reached 29.74 sacreBLEU.
+
+\section{Conclusion}
+Beam search effectively mitigates recurrent compounding errors, though Transformers maintain superior long-context fidelity.
+
+\section*{AI Use Disclosure}
+Assistance from Gemini/Claude AI assistants for code refactoring and typesetting is disclosed. All metrics reflect actual runs.
+
+\begin{thebibliography}{00}
+\bibitem{tiedemann2012} J. Tiedemann, ``Parallel data in OPUS,'' in \textit{LREC}, 2012, pp. 2214--2218.
+\bibitem{junczys2018} M. Junczys-Dowmunt \textit{et al.}, ``Marian: Fast neural machine translation,'' in \textit{ACL}, 2018, pp. 116--121.
+\end{thebibliography}
+
+\end{document}
