@@ -90,7 +90,7 @@ AI101-ML-Assignment-70177776/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/muhammadahmad70177776/AI101-ML-Assignment-70177776.git
+   git clone https://github.com/MuhammadAhmad32113/AI101-ML-Assignment-70177776.git
    cd AI101-ML-Assignment-70177776
    ```
 
