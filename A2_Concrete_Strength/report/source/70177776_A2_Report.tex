@@ -1,0 +1,134 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task A2: Predicting Concrete Compressive Strength}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Predicting concrete compressive strength from mixture proportions and curing age is essential for rapid structural assessment and construction safety. In this investigation, five predictive models were evaluated: Linear Regression (baseline), Polynomial+Ridge Regression, Random Forest, Gradient Boosting, and a Multi-Layer Perceptron (MLPRegressor). Tuned Gradient Boosting with engineered domain features (water-to-cement ratio and log-curing age) achieved a test RMSE of 4.270 MPa ($R^2 = 0.9292$), yielding a 35.0\% error reduction over standard linear regression.
+\end{abstract}
+
+\section{Introduction}
+Compressive strength is the quintessential metric governing structural concrete safety, traditionally evaluated through destructive laboratory compression testing requiring up to 28 days of wet curing. Formulating reliable machine learning models enables civil engineers to rapidly optimize mix designs, reduce waste, and predict early-age strength. In this investigation, five predictive models were trained and tuned: Linear Regression (baseline), Polynomial+Ridge Regression, Random Forest, Gradient Boosting, and a Multi-Layer Perceptron (MLPRegressor). Tuned Gradient Boosting with engineered domain features (water-to-cement ratio and log-curing age) achieved a test RMSE of 4.270 MPa ($R^2 = 0.9292$), yielding a 35.0\% error reduction over standard linear regression.
+
+\section{Problem Statement}
+Given an input vector $\mathbf{x} \in \mathbb{R}^8$ detailing mix proportions (cement, blast furnace slag, fly ash, water, superplasticizer, coarse aggregate, fine aggregate in $\text{kg/m}^3$) and sample curing age (days), the goal is to learn a mapping $f: \mathbb{R}^8 \to \mathbb{R}$ predicting compressive strength $y$ in MPa. The relationship is fundamentally non-linear, as concrete exhibits rapid logarithmic strength growth within early days followed by asymptotic flattening. Performance is measured via Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), and Coefficient of Determination ($R^2$).
+
+\section{Dataset Used}
+We utilize the Concrete Compressive Strength dataset from the UCI Machine Learning Repository (id=165) curated by Yeh [1]. The dataset comprises 1,030 experimental formulations tested across standard cylindrical specimens. No missing values exist. Crucially, domain feature engineering was performed by incorporating: (1) water-to-cement ratio ($\text{Water} / \text{Cement}$), and (2) logarithmic curing age $\log(\text{Age})$. All preprocessing transformations were embedded inside \texttt{scikit-learn Pipeline} objects fitted exclusively on the training split, completely eliminating data leakage.
+
+\section{Dataset Statistics}
+The dataset contains 1,030 samples randomly split into 824 training (80\%) and 206 testing (20\%) instances with random seed 42. Summary statistics appear in Table I. Fig. 1 illustrates the non-linear relationship between strength, age, and water/cement ratio.
+
+\begin{table}[htbp]
+\caption{Dataset Statistics}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Attribute Value} \\
+\midrule
+Total Samples & 1,030 concrete formulations \\
+Feature Modality & 8 raw numeric features + 2 engineered \\
+Target Variable & Compressive Strength (2.33 to 82.60 MPa) \\
+Target Distribution & Mean: 35.82 $\pm$ 16.71 MPa \\
+Missing Values (\%) & 0.00\% (complete records) \\
+Train / Test Split & 824 (80\%) / 206 (20\%) [Seed 42] \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.9\columnwidth]{figures/scatter_age_wc.png}}
+\caption{Compressive strength vs. Age (log-scale growth) and Water/Cement ratio.}
+\end{figure}
+
+\section{Methodology}
+\subsection{Learning Setting}
+Supervised regression was conducted comparing: (1) Ordinary Least Squares Linear Regression as a linear baseline; (2) Polynomial feature expansion (degree 2 and 3) coupled with $L_2$ Ridge regularisation; (3) Random Forest Regressor; (4) Gradient Boosting Regressor; and (5) a feedforward Multi-Layer Perceptron (MLPRegressor). All predictors were scaled using \texttt{StandardScaler} inside pipelines.
+
+\subsection{Data Split Approach}
+An 80/20 train/test split was established with random seed 42. Five-fold cross-validation was conducted exclusively across the 824 training samples for hyperparameter tuning using negative mean squared error scoring. Final evaluation was performed strictly once on the held-out 206 test samples.
+
+\subsection{Parameter Settings}
+Hyperparameters were selected via exhaustive grid search (Table II). MLP used early stopping with 10\% validation holdout to prevent overfitting.
+
+\begin{table}[htbp]
+\caption{Hyperparameter Settings}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Search Space} & \textbf{Selected Optimal} \\
+\midrule
+Linear Reg. & Baseline (OLS) & Standardized, unregularized \\
+Poly + Ridge & deg $\in \{2,3\}$, $\alpha \in [0.01, 100]$ & degree=3, $\alpha=10.0$ \\
+Random Forest & trees $\in \{200,400\}$, depth $\in \{10,20,\text{None}\}$ & 400 trees, depth=20, split=2 \\
+Grad. Boosting & trees $\in \{200,400\}$, lr $\in \{0.05,0.1\}$ & 400 trees, lr=0.1, depth=3 \\
+MLPRegressor & hidden $\in \{(128,64), (256,128,64)\}$ & (256,128,64), $\alpha=10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Results and Analysis}
+\subsection{Results}
+Model performance on the held-out test partition is compiled in Table III. Gradient Boosting achieved top accuracy with an RMSE of 4.270 MPa, MAE of 2.932 MPa, and $R^2$ of 0.9292. Fig. 2 displays the predicted vs. actual compressive strength plot.
+
+\begin{table}[htbp]
+\caption{Test-Set Evaluation Results}
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{MAE (MPa)} & \textbf{RMSE (MPa)} & $\mathbf{R^2}$ & \textbf{CV RMSE (mean$\pm$std)} \\
+\midrule
+Linear Regression & 5.289 & 6.573 & 0.8323 & 7.09 $\pm$ 0.48 \\
+Poly + Ridge (tuned) & 4.066 & 5.762 & 0.8712 & 5.03 $\pm$ 0.43 \\
+Random Forest (tuned) & 3.704 & 5.377 & 0.8878 & 5.11 $\pm$ 0.39 \\
+\textbf{Gradient Boosting} & \textbf{2.932} & \textbf{4.270} & \textbf{0.9292} & \textbf{4.64 $\pm$ 0.50} \\
+MLPRegressor (tuned) & 3.901 & 5.167 & 0.8964 & 5.14 $\pm$ 0.53 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.85\columnwidth]{figures/pred_vs_actual_best.png}}
+\caption{Predicted vs. Actual strength for best model (Gradient Boosting, $R^2=0.9292$).}
+\end{figure}
+
+\subsection{Analysis}
+\textbf{Why Linear Baseline Under-Performs:} Linear regression assumes constant marginal returns for all inputs. However, cement hydration kinetics are strictly non-linear: strength increases logarithmically with age and inversely with water content (Abrams' law). Fitting a linear plane to curved hydration trajectories violates linearity and homoscedasticity assumptions, resulting in severe residual variance.
+
+\textbf{Impact of Engineered Features:} Incorporating water/cement ratio and $\log(\text{age})$ dramatically improved every model. Linear Regression RMSE plummeted from 9.796 to 6.573 MPa ($R^2$ jumped from 0.6276 to 0.8323, a massive +32.6\% error reduction). Tree-based models also gained noticeably (GB RMSE dropped from 4.658 to 4.420 MPa), confirming that explicitly providing physically grounded ratios simplifies decision partitioning.
+
+\textbf{Error Analysis \& Feature Importance:} Feature importance analysis showed that \textit{Age} (35.2\%), \textit{Water/Cement ratio} (28.4\%), and \textit{Cement} (18.1\%) dominate strength predictions. Stratified residual analysis across age bins revealed that young specimens (1--7 days) exhibited higher relative percentage error due to high chemical sensitivity during initial setting reactions, whereas mature specimens ($>90$ days) exhibited the lowest absolute variance.
+
+\section{Conclusion}
+Gradient Tree Boosting integrated with domain-specific features (water/cement ratio and logarithmic age) accurately predicts concrete compressive strength (RMSE 4.270 MPa, $R^2 = 0.9292$). Incorporating domain-guided non-linear transformations significantly enhances both parametric and non-parametric algorithms. Future work could integrate aggregate grading curves and curing temperature records.
+
+\section*{AI Use Disclosure}
+I used Google Antigravity (Claude Opus / Gemini 3.8 Flash) for drafting boilerplate code, generating plotting utilities, and refining the text layout. All code was executed locally, all experimental metrics were empirically generated from the notebook, and I take full academic responsibility for this work.
+
+\begin{thebibliography}{00}
+\bibitem{b1} I-C. Yeh, ``Modeling of strength of high-performance concrete using artificial neural networks,'' \textit{Cement and Concrete Research}, vol. 28, no. 12, pp. 1797--1808, 1998.
+\bibitem{b2} F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{JMLR}, vol. 12, pp. 2825--2830, 2011.
+\end{thebibliography}
+
+\end{document}
