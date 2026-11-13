@@ -1,0 +1,57 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\begin{document}
+
+\title{Task B1: Detecting Fraudulent Job Postings via Multimodal Structured and Free-Text NLP Pipeline}
+
+\author{\IEEEauthorblockN{Muhammad Ahmad}
+\IEEEauthorblockA{\textit{Department of Intelligent Systems} \\
+\textit{The University of Lahore}\\
+Lahore, Pakistan \\
+Roll No: 70177776, Section: BSRAI-C}
+}
+
+\maketitle
+
+\begin{abstract}
+Online recruitment fraud exposes applicants to financial extortion and identity theft. In this paper, we develop a multimodal classification pipeline on the EMSCAD benchmark (17,880 postings). By integrating $n$-gram TF-IDF representations of five free-text fields with engineered missingness indicators and categorical metadata, our best model—Calibrated Linear SVM—attains a fraud F1-score of 0.8907 (PR-AUC 0.9555) on the held-out test split, outperforming single-modality structured predictors by +90.3\% relative F1 gain.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Fraud Detection, Multimodal Learning, Class Imbalance, Natural Language Processing, ColumnTransformer.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Online employment fraud has proliferated with digital recruitment platforms. We analyze the EMSCAD dataset containing 17,880 records. Fusing structured metadata with free-text representations produces an optimal F1 of 0.8907 via Calibrated Linear SVM.
+
+\section{Problem Statement}
+Each job record is defined as $\mathbf{x} = (\mathbf{x}_{\text{struct}}, \mathbf{x}_{\text{text}})$. We map $\mathbf{x} \to y \in \{0, 1\}$, with severe class imbalance ($\sim$4.84\% fraud). A naive majority baseline achieves 95.15\% accuracy while catching zero scams. We evaluate via Precision, Recall, F1, and PR-AUC.
+
+\section{Dataset Used}
+We use the EMSCAD dataset (Kaggle: \texttt{shivamb/real-or-fake-fake-jobposting-prediction}) with 17,880 records and 17 raw features across text, tabular, and binary attributes.
+
+\section{Methodology and Results}
+Pipelines combine \texttt{ColumnTransformer} with sublinear TF-IDF (20,000 features). Models evaluated include Balanced Logistic Regression, Calibrated Linear SVM, Balanced Random Forest, and LightGBM. Decision thresholds $\tau^*$ were tuned on the validation set.
+
+Linear SVM achieved peak test F1 of 0.8907 (Precision 0.9402, Recall 0.8462, PR-AUC 0.9555). In the ablation study, combining modalities boosted F1 from 0.4378 (structured only) to 0.8333 (combined).
+
+\section{Conclusion}
+Multimodal fusion dramatically enhances fraud detection accuracy under extreme imbalance.
+
+\section*{AI Use Disclosure}
+Assistance from Gemini/Claude for code refactoring and report drafting is disclosed under university guidelines. All outputs are empirically verified.
+
+\begin{thebibliography}{00}
+\bibitem{vidros2017} S. Vidros \textit{et al.}, ``Automatic detection of online recruitment frauds,'' \textit{Future Internet}, vol. 9, no. 1, p. 6, 2017.
+\bibitem{pedregosa2011} F. Pedregosa \textit{et al.}, ``Scikit-learn: Machine learning in Python,'' \textit{JMLR}, vol. 12, pp. 2825--2830, 2011.
+\end{thebibliography}
+
+\end{document}
